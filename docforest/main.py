@@ -1,4 +1,3 @@
-import re
 from typing import Dict, List, Literal, Optional
 
 DocStyle = Literal["markdown", "asciidoc"]
