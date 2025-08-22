@@ -31,20 +31,15 @@ def chunk_document(content: str, style: DocStyle) -> List[str]:
         return section_stack[-1].level if section_stack else 0
 
     def flush():
-        nonlocal chunks
-        print("Flushing section stack")
         chunk = "\n".join(section.content for section in section_stack)
         if chunk:
             chunks.append(chunk)
 
     for line in lines:
         if line.startswith(delimiter):
-            print(line)
             cur_level = len(line) - len(line.lstrip(delimiter))
-            print(cur_level)
             cur_section = Section(cur_level, line)
             if cur_level <= get_prev_section_level():
-                print(get_prev_section_level())
                 flush()
                 while cur_level <= get_prev_section_level():
                     section_stack.pop()
@@ -53,7 +48,5 @@ def chunk_document(content: str, style: DocStyle) -> List[str]:
             cur_section.content += "\n" + line
 
     flush()
-
-    print(chunks)
 
     return chunks
