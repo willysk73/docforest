@@ -28,7 +28,7 @@ from docforest import DocForest, DocStyle
 forest = DocForest(style=DocStyle.MARKDOWN)
 
 # chunk a document by giving its content
-forest.chunk_document(content="content")
+forest.chunk(content="content")
 ```
 
 -----
