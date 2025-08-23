@@ -1,8 +1,10 @@
-from typing import Dict, List, Literal, Optional
+from .enums import DocStyle
+from typing import Dict, List, Optional
 
-DocStyle = Literal["markdown", "asciidoc"]
-
-style_delimiter_map: Dict[DocStyle, str] = {"markdown": "#", "asciidoc": "="}
+style_delimiter_map: Dict[DocStyle, str] = {
+    DocStyle.MARKDOWN: "#",
+    DocStyle.ASCIIDOC: "=",
+}
 
 
 class Section:
@@ -14,39 +16,45 @@ class Section:
         return f"Section(level={self.level}, content={self.content})"
 
 
-def chunk_document(content: str, style: DocStyle) -> List[str]:
-    if not content.strip():
-        return []
-    if style not in style_delimiter_map:
-        raise ValueError(f"Unsupported style: {style}")
+class DocForest:
+    def __init__(self, style: DocStyle):
+        self.style = style
 
-    delimiter = style_delimiter_map[style]
+    def _validate_style(self, style: DocStyle):
+        if style not in style_delimiter_map:
+            raise ValueError(f"Unsupported style: {style}")
 
-    lines = content.splitlines()
-    cur_section: Optional[Section] = None
-    section_stack: List[Section] = []
-    chunks: List[str] = []
+    def chunk(self, content: str) -> List[str]:
+        if not content.strip():
+            return []
+        self._validate_style(self.style)
 
-    def get_prev_section_level() -> int:
-        return section_stack[-1].level if section_stack else 0
+        cur_section: Optional[Section] = None
+        section_stack: List[Section] = []
+        chunks: List[str] = []
 
-    def flush():
-        chunk = "\n".join(section.content for section in section_stack)
-        if chunk:
-            chunks.append(chunk)
+        def get_prev_section_level() -> int:
+            return section_stack[-1].level if section_stack else 0
 
-    for line in lines:
-        if line.startswith(delimiter):
-            cur_level = len(line) - len(line.lstrip(delimiter))
-            cur_section = Section(cur_level, line)
-            if cur_level <= get_prev_section_level():
-                flush()
-                while cur_level <= get_prev_section_level():
-                    section_stack.pop()
-            section_stack.append(cur_section)
-        elif cur_section is not None:
-            cur_section.content += "\n" + line
+        def flush():
+            chunk = "\n".join(section.content for section in section_stack)
+            if chunk:
+                chunks.append(chunk)
 
-    flush()
+        lines = content.splitlines()
+        delimiter = style_delimiter_map[self.style]
 
-    return chunks
+        for line in lines:
+            if line.startswith(delimiter):
+                cur_level = len(line) - len(line.lstrip(delimiter))
+                cur_section = Section(cur_level, line)
+                if cur_level <= get_prev_section_level():
+                    flush()
+                    while cur_level <= get_prev_section_level():
+                        section_stack.pop()
+                section_stack.append(cur_section)
+            elif cur_section is not None:
+                cur_section.content += "\n" + line
+
+        flush()
+        return chunks
