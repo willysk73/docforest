@@ -22,7 +22,13 @@ pip install docforest
 ### Usage
 
 ```python
-# (Code examples will be added here once the core logic is implemented.)
+from docforest import DocForest, DocStyle
+
+# Create a DocForest instance with the desired document style
+forest = DocForest(style=DocStyle.MARKDOWN)
+
+# chunk a document by giving its content
+forest.chunk_document(content="content")
 ```
 
 -----
